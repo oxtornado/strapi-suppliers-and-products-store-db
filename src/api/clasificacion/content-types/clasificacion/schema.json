@@ -1,0 +1,26 @@
+{
+  "kind": "collectionType",
+  "collectionName": "clasificacions",
+  "info": {
+    "singularName": "clasificacion",
+    "pluralName": "clasificacions",
+    "displayName": "Clasificacion"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "categoria": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::categoria.categoria",
+      "inversedBy": "clasificacions"
+    },
+    "producto": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::producto.producto",
+      "inversedBy": "clasificacions"
+    }
+  }
+}
