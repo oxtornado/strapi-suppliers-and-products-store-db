@@ -395,6 +395,10 @@ export interface ApiCategoriaCategoria extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     nombreCategoria: Schema.Attribute.String;
+    productos: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::producto.producto'
+    >;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -406,7 +410,7 @@ export interface ApiClasificacionClasificacion
   extends Struct.CollectionTypeSchema {
   collectionName: 'clasificacions';
   info: {
-    description: '';
+    description: 'Junction table for many-to-many relationship between Products and Categories';
     displayName: 'Clasificacion';
     pluralName: 'clasificacions';
     singularName: 'clasificacion';
@@ -422,12 +426,16 @@ export interface ApiClasificacionClasificacion
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    isPrincipal: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::clasificacion.clasificacion'
     > &
       Schema.Attribute.Private;
+    mostrarEnDestacados: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    orden: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     producto: Schema.Attribute.Relation<'manyToOne', 'api::producto.producto'>;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
@@ -449,6 +457,10 @@ export interface ApiProductoProducto extends Struct.CollectionTypeSchema {
   };
   attributes: {
     cantidadStockProducto: Schema.Attribute.Integer;
+    categorias: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::categoria.categoria'
+    >;
     clasificacions: Schema.Attribute.Relation<
       'oneToMany',
       'api::clasificacion.clasificacion'
