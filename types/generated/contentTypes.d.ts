@@ -406,6 +406,7 @@ export interface ApiClasificacionClasificacion
   extends Struct.CollectionTypeSchema {
   collectionName: 'clasificacions';
   info: {
+    description: '';
     displayName: 'Clasificacion';
     pluralName: 'clasificacions';
     singularName: 'clasificacion';
@@ -463,7 +464,7 @@ export interface ApiProductoProducto extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     nombreProducto: Schema.Attribute.String;
-    precioProducto: Schema.Attribute.Decimal;
+    precioProducto: Schema.Attribute.Integer;
     proveedor: Schema.Attribute.Relation<
       'manyToOne',
       'api::proveedor.proveedor'

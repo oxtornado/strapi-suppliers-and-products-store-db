@@ -48,11 +48,30 @@ export default {
         },
         {
             method: 'GET',
-            path: '/producto/:id/categorias',
-            handler: 'clasificacion.findCategoriasByProducto',
+            path: '/clasificacion/categoria/:id/productos',
+            handler: 'clasificacion.findProductosByCategoria',
             config: {
-                auth: false
-            }
-        }
+              policies: [],
+              middlewares: [],
+            },
+        }, 
+        {
+            method: 'GET',
+            path: '/clasificacion/productos-con-categorias',
+            handler: 'clasificacion.findProductosConCategorias',
+            config: {
+              policies: [],
+              middlewares: [],
+            },
+          },
+          {
+            method: 'GET',
+            path: '/clasificacion/productos-by-categoria/:id',
+            handler: 'clasificacion.findProductosByCategoria',
+            config: {
+              policies: [],
+              auth: false,
+            },
+          },
     ]
 }

@@ -3,6 +3,7 @@
  */
 
 import { factories } from '@strapi/strapi';
+import * as producto from '../controllers/producto';
 
 export default {
     routes: [
@@ -48,19 +49,19 @@ export default {
         },
         {
             method: "GET",
-            path: "/categoria/:id/productos",
-            handler: "producto.findProductosByCategoria",
+            path: "/producto/categoria/:id",
+            handler: "producto.findCategoriasByProducto",
             config: {
                 auth: false 
             },
         },
         {
-            method: 'GET',
-            path: '/categorias/:categorias/productos',
-            handler: 'producto.findProductosByCategorias',
+            method: "GET",
+            path: "/producto/proveedor/:id",
+            handler: "producto.findProductosByProveedor",
             config: {
-                policies: []
-            }
-        }
+                auth: false 
+            },
+        },
     ]
 }

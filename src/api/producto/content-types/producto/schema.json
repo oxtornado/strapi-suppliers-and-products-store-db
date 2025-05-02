@@ -18,7 +18,7 @@
       "type": "string"
     },
     "precioProducto": {
-      "type": "decimal"
+      "type": "integer"
     },
     "cantidadStockProducto": {
       "type": "integer"

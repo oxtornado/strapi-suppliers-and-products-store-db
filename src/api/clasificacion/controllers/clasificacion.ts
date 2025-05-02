@@ -1,46 +1,126 @@
 /**
  * clasificacion controller
  */
-
 import { factories } from '@strapi/strapi'
 
 export default factories.createCoreController('api::clasificacion.clasificacion', ({ strapi }) => ({
-    async findOne(ctx) {
-        const { query, params } = ctx
-        return await strapi.services.clasificacion.findOne({ query, params })
-    },
+  async findOne(ctx) {
+    const { params, query } = ctx;
+    return await strapi.entityService.findOne('api::clasificacion.clasificacion', params.id, {
+      ...query,
+      populate: ['producto', 'categoria'],
+    });
+  },
 
-    async findMany(ctx) {
-        const { query, params } = ctx
-        return await strapi.services.clasificacion.find({ query, params })
-    },
+  async findMany(ctx) {
+    const { query } = ctx;
+    return await strapi.entityService.findMany('api::clasificacion.clasificacion', {
+      ...query,
+      populate: ['producto', 'categoria'],
+    });
+  },
 
-    async update(ctx) {
-        const { data, params } = ctx
-        return await strapi.services.clasificacion.update({ data, params })
-    },
+  async update(ctx) {
+    const { data, params } = ctx.request.body;
+    return await strapi.entityService.update('api::clasificacion.clasificacion', params.id, {
+      data,
+    });
+  },
 
-    async delete(ctx) {
-        const { data, params } = ctx
-        return await strapi.services.clasificacion.delete({ data, params })
-    },
+  async delete(ctx) {
+    const { params } = ctx;
+    return await strapi.entityService.delete('api::clasificacion.clasificacion', params.id);
+  },
 
-    async create(ctx) {
-        const { data, params } = ctx
-        return await strapi.services.clasificacion.create({ data, params })
-    },
+  async create(ctx) {
+    const { data } = ctx.request.body;
+    return await strapi.entityService.create('api::clasificacion.clasificacion', {
+      data,
+    });
+  },
 
-    // funcion para consultar las categorias que tiene el producto
-    async findCategoriasByProducto(ctx) {
-        const { id } = ctx.params;
+  async findProductosByCategoria(ctx) {
+    const { id } = ctx.params;
 
-        // verificar si el producto existe
-        const producto = await strapi.db.query('api::producto.producto').findOne({ where: { id } });
-        if (!producto) return ctx.badRequest('El producto no existe.');
+    console.log('🟡 Entrando a findProductosByCategoria con id:', id);
 
-        // obtener las categorias que tiene el producto
-        const categorias = await strapi.db.query('api::clasificacion.clasificacion').findMany({ where: { idProducto: id } });
+    try {
+      const clasificaciones = await strapi.db.query('api::clasificacion.clasificacion').findMany({
+        where: {
+          categoria: {
+            id: parseInt(id),
+          },
+        },
+        populate: ['producto'],
+      });
 
-        return { producto, categorias };
+      console.log('🟢 Clasificaciones encontradas:', clasificaciones.length);
+
+      const productos = clasificaciones
+        .map(cl => cl.producto)
+        .filter(Boolean);
+
+      console.log('🔵 Productos después de filtrar nulos:', productos.length);
+
+      const productosUnicos = Array.from(
+        new Map(productos.map(p => [p.id, p])).values()
+      );
+
+      console.log('🟣 Productos únicos:', productosUnicos.length);
+
+      const categoria = await strapi.db.query('api::categoria.categoria').findOne({
+        where: {
+          id: parseInt(id),
+        },
+        populate: ['productos'],
+      });
+
+      return { "la categoria": categoria.nombreCategoria, "tiene asociados los productos": productosUnicos };
+    } catch (error) {
+      console.error('🔴 Error en findProductosByCategoria:', error);
+      ctx.throw(500, 'Error interno del servidor');
     }
-}))
+  },
+
+  async findProductosConCategorias(ctx) {
+    try {
+      console.log('🟡 Entrando a findProductosConCategorias');
+
+      const clasificaciones = await strapi.db.query('api::clasificacion.clasificacion').findMany({
+        populate: ['producto', 'categoria'],
+      });
+
+      console.log('🟢 Clasificaciones encontradas:', clasificaciones.length);
+
+      const mapaProductos = new Map();
+
+      for (const cl of clasificaciones) {
+        const producto = cl.producto;
+        const categoria = cl.categoria;
+
+        if (!producto || !categoria) continue;
+
+        if (!mapaProductos.has(producto.id)) {
+          mapaProductos.set(producto.id, {
+            producto: producto,
+            categorias: [categoria],
+          });
+        } else {
+          mapaProductos.get(producto.id).categorias.push(categoria);
+        }
+      }
+
+      const resultado = Array.from(mapaProductos.values()).map(entry => ({
+        "el producto": entry.producto.nombreProducto,
+        "tiene asociados las categorias": entry.categorias,
+      }));
+
+      console.log('🔵 Productos con categorías asociadas:', resultado.length);
+
+      return resultado;
+    } catch (error) {
+      console.error('🔴 Error en findProductosConCategorias:', error);
+      ctx.throw(500, 'Error interno del servidor');
+    }
+  },
+}));

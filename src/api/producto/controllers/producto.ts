@@ -1,4 +1,5 @@
 import { factories } from '@strapi/strapi';
+import producto from '../routes/producto';
 
 export default factories.createCoreController('api::producto.producto', ({ strapi }) => ({
   async findOne(ctx) {
@@ -22,46 +23,74 @@ export default factories.createCoreController('api::producto.producto', ({ strap
   },
 
   async create(ctx) {
-    const { proveedor, categorias, ...productoData } = ctx.request.body;
+    const { proveedor, categorias, ...productoData } = ctx.request.body; // el ... extrae el resto de propiedades del objeto
 
-    if (!proveedor) return ctx.badRequest('El proveedor es obligatorio.');
-    if (!await proveedorValido(proveedor)) return ctx.badRequest('El proveedor no existe.');
-    if (!categorias?.length) return ctx.badRequest('El producto debe tener al menos una categoría.');
+    if (!proveedor) return ctx.badRequest('El proveedor es obligatorio.'); // i. Cada producto debe estar asociado a un proveedor.
+    if (!await proveedorValido(proveedor)) return ctx.badRequest('El proveedor no existe.'); // verificamos si el proveedor existe
+    if (!(proveedor?.length !== 1)) return ctx.badRequest('El producto debe tener solo un proveedor.'); // iii. ...cada producto solo puede tener un proveedor.
+    if (!categorias?.length) return ctx.badRequest('El producto debe tener al menos una categoría.'); // ii. Un producto debe estar vinculado al menos a una categoría.
 
     const producto = await strapi.db.query('api::producto.producto').create({ data: { proveedor, ...productoData } });
     await vincularCategorias(producto.id, categorias);
 
     return { producto };
   },
-  // 🔹 Funcion para consultar productos con mas de una categoría
-  async findProductosByCategorias(ctx) {
-    const { categorias } = ctx.params;
 
-    // Verificar si las categorías existen
-    const categoriasExistentes = await Promise.all(
-      categorias.map(id => strapi.db.query('api::clasificacion.clasificacion').findOne({ where: { id } }))
-    );
-    const categoriasNoExistentes = categorias.filter(id => !categoriasExistentes.find(categoria => categoria.id === id));
-    if (categoriasNoExistentes.length) return ctx.badRequest('Las categorías no existen.');
-
-    // Obtener productos con las categorías
-    const productos = await strapi.db.query('api::producto.producto').findMany({ where: { categorias: { id: categorias } } });
-
-    return { categorias, productos };
-  },
-  // 🔹 Función para consultar productos con una categoría específica
-  async findProductosByCategoria(ctx) {
+  // Función para consultar productos con un proveedor específico
+  async findProductosByProveedor(ctx) {
+    console.log("FINDPROVEEDORPRODUCTOS!!!");
     const { id } = ctx.params;
 
-    // Verificar si la categoría existe
-    const categoria = await strapi.db.query('api::clasificacion.clasificacion').findOne({ where: { id } });
-    if (!categoria) return ctx.badRequest('La categoría no existe.');
+    console.log("ID: ", id);
 
-    // Obtener productos con la categoría
-    const productos = await strapi.db.query('api::producto.producto').findMany({ where: { categorias: { id } } });
+    // Verificar si el proveedor existe
+    const proveedor = await strapi.db.query('api::proveedor.proveedor').findOne({ where: { id } });
 
-    return { categoria, productos };
-  }
+    console.log("Proveedor: ", proveedor);
+    if (!proveedor) return ctx.badRequest('El proveedor no existe.');
+
+    // Obtener productos del proveedor
+    const productos = await strapi.db.query('api::producto.producto').findMany({ where: { proveedor: id } });
+    console.log("Productos: ", productos);
+
+    const nombre = await proveedor.nombreProveedor;
+
+    return { nombre , productos };
+  },
+
+  async findCategoriasByProducto(ctx) {
+    const { id } = ctx.params;
+  
+    const producto = await strapi.db.query('api::producto.producto').findOne({
+      where: { id },
+      populate: false,
+    });
+  
+    if (!producto) return ctx.badRequest("El producto no existe.");
+  
+    const clasificaciones = await strapi.db.query('api::clasificacion.clasificacion').findMany({
+      where: { producto: id },
+    });
+  
+    const categoriasPorClasificacion = await Promise.all(
+      clasificaciones.map(async (clasificacion) => {
+        const categorias = await strapi.db.query('api::categoria.categoria').findMany({
+          where: {
+            clasificacion: clasificacion.id,
+          },
+        });
+        return categorias.map(c => c.nombreCategoria);
+      })
+    );
+  
+    // Aplanar el array
+    const categorias = categoriasPorClasificacion.flat();
+  
+    return {
+      producto: producto.nombreProducto,
+      categorias,
+    };
+  },  
 }));
 
 // 🔹 Función para validar si el proveedor existe

@@ -4,7 +4,8 @@
   "info": {
     "singularName": "clasificacion",
     "pluralName": "clasificacions",
-    "displayName": "Clasificacion"
+    "displayName": "Clasificacion",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
