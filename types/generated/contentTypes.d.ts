@@ -426,16 +426,12 @@ export interface ApiClasificacionClasificacion
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    isPrincipal: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::clasificacion.clasificacion'
     > &
       Schema.Attribute.Private;
-    mostrarEnDestacados: Schema.Attribute.Boolean &
-      Schema.Attribute.DefaultTo<false>;
-    orden: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     producto: Schema.Attribute.Relation<'manyToOne', 'api::producto.producto'>;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;

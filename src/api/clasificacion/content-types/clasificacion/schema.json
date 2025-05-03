@@ -11,21 +11,6 @@
     "draftAndPublish": true
   },
   "attributes": {
-    "isPrincipal": {
-      "type": "boolean",
-      "default": false,
-      "description": "Indicates if this is the principal category for the product"
-    },
-    "mostrarEnDestacados": {
-      "type": "boolean",
-      "default": false,
-      "description": "Show this product in featured section of this category"
-    },
-    "orden": {
-      "type": "integer",
-      "default": 0,
-      "description": "Order of display in category"
-    },
     "categoria": {
       "type": "relation",
       "relation": "manyToOne",
