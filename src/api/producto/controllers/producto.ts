@@ -91,6 +91,77 @@ export default factories.createCoreController('api::producto.producto', ({ strap
       categorias,
     };
   },  
+
+  async findByProveedor(ctx) {
+    let idProveedor; 
+    
+    try {
+      // 1. Input Validation Pattern
+      idProveedor = ctx.params.idProveedor;
+      if (!idProveedor) {
+        return ctx.badRequest('El ID del proveedor es requerido');
+      }
+
+      // 2. Type Validation Pattern
+      const proveedorId = parseInt(idProveedor);
+      if (isNaN(proveedorId)) {
+        return ctx.badRequest('El ID del proveedor debe ser un número');
+      }
+
+      // 3. Existence Validation Pattern
+      const existeProveedor = await strapi.db.query('api::proveedor.proveedor').findOne({
+        where: { id: proveedorId },
+        select: ['nombreProveedor']
+      });
+
+      if (!existeProveedor) {
+        return ctx.notFound(`No se encontró el proveedor con id: ${proveedorId}`);
+      }
+
+      // 4. Data Retrieval Pattern with Error Boundary
+      let productosProveedor;
+      try {
+        productosProveedor = await strapi.db.query('api::producto.producto').findMany({
+          where: { proveedor: proveedorId },
+          select: ['nombreProducto', 'precioProducto']
+        });
+      } catch (dbError) {
+        console.error('Error al consultar productos:', {
+          error: dbError,
+          proveedorId,
+          timestamp: new Date().toISOString()
+        });
+        return ctx.internalServerError('Error al consultar los productos');
+      }
+
+      // 5. Empty Results Handling Pattern
+      if (!productosProveedor.length) {
+        return {
+          "el proveedor": existeProveedor.nombreProveedor,
+          "mensaje": "Este proveedor no tiene productos asociados",
+          "productos": []
+        };
+      }
+
+      // 6. Success Response Pattern
+      return {
+        "el proveedor": existeProveedor.nombreProveedor,
+        "tiene asociados los productos": productosProveedor
+      };
+
+    } catch (error) {
+      // 7. Detailed Error Logging Pattern
+      console.error('Error en findByProveedor:', {
+        error: error.message,
+        stack: error.stack,
+        proveedorId: idProveedor,
+        timestamp: new Date().toISOString()
+      });
+      
+      // 8. User-Friendly Error Response Pattern
+      return ctx.internalServerError('Ha ocurrido un error al procesar su solicitud');
+    }
+  }
 }));
 
 // 🔹 Función para validar si el proveedor existe

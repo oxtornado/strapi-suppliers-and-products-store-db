@@ -33,7 +33,14 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::clasificacion.clasificacion",
-      "mappedBy": "producto"
+      "mappedBy": "producto",
+      "description": "Categories associated with this product through classifications"
+    },
+    "categorias": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::categoria.categoria",
+      "inversedBy": "productos"
     }
   }
 }

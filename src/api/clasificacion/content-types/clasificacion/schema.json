@@ -5,7 +5,7 @@
     "singularName": "clasificacion",
     "pluralName": "clasificacions",
     "displayName": "Clasificacion",
-    "description": ""
+    "description": "Junction table for many-to-many relationship between Products and Categories"
   },
   "options": {
     "draftAndPublish": true

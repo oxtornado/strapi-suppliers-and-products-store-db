@@ -46,6 +46,7 @@ export default {
                 policies: []
             }
         },
+        // personalized endpoints
         {
             method: 'GET',
             path: '/clasificacion/categoria/:id/productos',

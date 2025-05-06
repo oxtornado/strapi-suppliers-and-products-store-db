@@ -56,12 +56,12 @@ export default {
             },
         },
         {
-            method: "GET",
-            path: "/producto/proveedor/:id",
-            handler: "producto.findProductosByProveedor",
+            method: 'GET',
+            path: '/producto/proveedor/:idProveedor',
+            handler: 'producto.findByProveedor',
             config: {
-                auth: false 
-            },
-        },
+                auth: false
+            }
+        }   
     ]
 }

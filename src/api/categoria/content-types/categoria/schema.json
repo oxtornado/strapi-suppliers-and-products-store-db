@@ -20,7 +20,14 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::clasificacion.clasificacion",
-      "mappedBy": "categoria"
+      "mappedBy": "categoria",
+      "description": "Products associated with this category through classifications"
+    },
+    "productos": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::producto.producto",
+      "mappedBy": "categorias"
     }
   }
 }
